@@ -128,3 +128,112 @@ def initialize_database():
     remove_duplicate_students()
 
 
+
+def add_book(book_id, title, author, genre, year, quantity):
+    """
+    Adds a new book to the Books table.
+
+    Parameters:
+    - book_id (int): Unique identifier for the book.
+    - title (str): The title of the book.
+    - author (str): The author of the book.
+    - genre (str): The genre of the book.
+    - year (int): The publication year of the book.
+    - quantity (int): Number of copies available.
+    """
+    connection = sqlite3.connect(DB_FILE)
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+        INSERT INTO Books (book_id, title, author, genre, year, quantity)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (book_id, title, author, genre, year, quantity))
+        connection.commit()
+        print("Book added successfully.")
+        messagebox.showinfo("Success", "Book added successfully!")
+    except sqlite3.IntegrityError:
+        print("Error: Book ID must be unique.")
+        messagebox.showerror("Error", "Book ID already exists!")
+    except Exception as e:
+        print(f"Error: {e}")
+        messagebox.showerror("Error", f"Failed to add book: {e}")
+    finally:
+        connection.close()
+
+
+def show_books():
+    """Retrieve and return all books from the Books table."""
+    connection = sqlite3.connect(DB_FILE)
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM Books")
+    books = cursor.fetchall()
+    connection.close()
+    return books
+
+
+
+def fetch_students(search_query=""):
+    """Fetch students from the database and print results for debugging."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    if search_query:
+        cursor.execute(
+            "SELECT student_id, name, email, date_of_birth FROM Students WHERE student_id LIKE ? OR name LIKE ?",
+            (f"%{search_query}%", f"%{search_query}%")
+        )
+    else:
+        cursor.execute("SELECT student_id, name, email, date_of_birth FROM Students")
+
+    students = cursor.fetchall()
+    conn.close()
+
+    #print("Fetched Students:", students)  # Debugging print statement
+    #return students
+
+
+def add_student(name, email, date_of_birth, student_id):
+    """
+    Adds a new student to the Students table.
+
+    Parameters:
+    - student_id (int): Unique ID of the student.
+    - name (str): The name of the student.
+    - email (str): The email of the student (must be unique).
+    - date_of_birth (str): The date of birth in YYYY-MM-DD format.
+    """
+    connection = sqlite3.connect(DB_FILE)
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+        INSERT INTO Students (student_id, name, email, date_of_birth)
+        VALUES (?, ?, ?, ?)
+        """, (student_id, name, email, date_of_birth))
+        connection.commit()
+        print("Student added successfully.")
+        messagebox.showinfo("Success", "Student added successfully!")
+    except sqlite3.IntegrityError:
+        print("Error: Student ID or Email must be unique.")
+        messagebox.showerror("Error", "Student ID or Email already exists!")
+    finally:
+        connection.close()
+
+
+from datetime import datetime
+
+def update_time(label):
+    """Update the label with the current date and time."""
+    current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")  # Format: DD-MM-YYYY HH:MM:SS
+    label.config(text=f"Date & Time: {current_time}")
+    label.after(1000, update_time, label)  # Refresh every second
+
+    
+
+
+
+
+
+
+
