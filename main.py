@@ -189,8 +189,6 @@ def fetch_students(search_query=""):
     students = cursor.fetchall()
     conn.close()
 
-    #print("Fetched Students:", students)  # Debugging print statement
-    #return students
 
 
 def add_student(name, email, date_of_birth, student_id):
@@ -221,7 +219,14 @@ def add_student(name, email, date_of_birth, student_id):
         connection.close()
 
 
+import tkinter as tk
+from tkinter import messagebox
 from datetime import datetime
+
+LIGHT_THEME = {"bg": "#F8F9FA", "fg": "#2C3E50", "button_bg": "#3498DB", "button_hover": "#2980B9"}
+DARK_THEME = {"bg": "#2C3E50", "fg": "white", "button_bg": "#E67E22", "button_hover": "#D35400"}
+
+current_theme = LIGHT_THEME  
 
 def update_time(label):
     """Update the label with the current date and time."""
@@ -229,7 +234,110 @@ def update_time(label):
     label.config(text=f"Date & Time: {current_time}")
     label.after(1000, update_time, label)  # Refresh every second
 
+
+def on_enter(e):
+    e.widget.config(bg=current_theme["button_hover"])
+
+
+def on_leave(e):
+    e.widget.config(bg=current_theme["button_bg"])
+
+
+def toggle_theme(root):
+    global current_theme
+    current_theme = DARK_THEME if current_theme == LIGHT_THEME else LIGHT_THEME
+
+    # Update all elements
+    root.config(bg=current_theme["bg"])
+    header_frame.config(bg=current_theme["fg"])
+    title_label.config(bg=current_theme["fg"], fg=current_theme["bg"])
+    time_label.config(bg=current_theme["fg"], fg=current_theme["bg"])
+
+    for btn in buttons:
+        btn.config(bg=current_theme["button_bg"], fg="white")
+
+    theme_button.config(bg=current_theme["button_bg"], fg="white")
+
+
+def perform_action(action_name, root):
+    """Handles button actions in the dashboard."""
+    if action_name == "Log Out":
+        logout(root)  # Pass the root window
+    elif action_name == "Add Books":
+        add_books_window()
+    elif action_name == "Add Student":
+        add_student_window()
+    elif action_name == "Show Book":
+        show_books_window()
+    elif action_name == "Edit Books":
+        edit_books_window()
+    elif action_name == "Student Details":
+        show_students_window()
+    else:
+        messagebox.showinfo("Action", f"You clicked on {action_name}.")
+def open_dashboard():
+
+    global header_frame, title_label, time_label, buttons, theme_button  
+
+    dashboard = tk.Tk()
+    dashboard.title("📚 Library Management System - Dashboard")
+    dashboard.geometry("1000x700")
+    dashboard.resizable(False, False)
+    dashboard.config(bg=current_theme["bg"])
+
+    #  Header Frame 
+    header_frame = tk.Frame(dashboard, bg=current_theme["fg"], height=100)
+    header_frame.pack(fill='x')
+
+    title_label = tk.Label(
+        header_frame, text="📚 Library Dashboard",
+        font=('Arial', 26, 'bold'), bg=current_theme["fg"], fg=current_theme["bg"]
+    )
+    title_label.pack(side='left', padx=30, pady=15)
+
+    time_label = tk.Label(header_frame, text="", font=("Arial", 14), bg=current_theme["fg"], fg=current_theme["bg"])
+    time_label.pack(side="right", padx=30, pady=15)
+    update_time(time_label)
+
+    #  Button Grid Frame
+    button_frame = tk.Frame(dashboard, bg=current_theme["bg"])
+    button_frame.pack(expand=True, pady=30)
+
+    buttons = []
+    button_texts = [
+        ("📖 Add Books", "Add Books"),
+        ("👨‍🎓 Add Student", "Add Student"),
+        ("✏️ Edit Books", "Edit Books"),
+        ("📋 Student Details", "Student Details"),
+        ("📚 Show Book", "Show Book"),
+        ("🚪 Log Out", "Log Out")
+    ]
+
+    for i, (icon, text) in enumerate(button_texts):
+        btn = tk.Button(
+            button_frame, text=icon, font=("Arial", 16, "bold"), bg=current_theme["button_bg"], fg="white",
+            width=20, height=2, relief="raised", bd=4,
+            activebackground=current_theme["button_hover"], activeforeground="white",
+            command=lambda t=text: perform_action(t, dashboard)
+        )
+        btn.grid(row=i // 2, column=i % 2, padx=40, pady=20)
+        btn.bind("<Enter>", on_enter)  
+        btn.bind("<Leave>", on_leave)
+        buttons.append(btn)  
+
     
+    theme_button = tk.Button(
+        dashboard, text="🌙 Toggle Theme", font=("Arial", 14, "bold"), bg=current_theme["button_bg"], fg="white",
+        width=20, height=2, relief="raised", bd=4, command=lambda: toggle_theme(dashboard)
+    )
+    theme_button.pack(pady=20)
+
+    dashboard.mainloop()
+
+
+if __name__ == "__main__":
+    open_dashboard()
+
 
 
 
